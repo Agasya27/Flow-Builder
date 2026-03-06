@@ -126,6 +126,11 @@ export const useWorkflowStore = create<WorkflowStore>((set, get) => ({
       else if (connection.sourceHandle === 'false') label = 'False';
     }
 
+    // Color-code condition branch edges
+    let strokeColor = 'hsl(var(--muted-foreground) / 0.4)';
+    if (label === 'True') strokeColor = 'hsl(152, 60%, 45%)';
+    else if (label === 'False') strokeColor = 'hsl(0, 70%, 55%)';
+
     const newEdge: WorkflowEdge = {
       ...connection,
       id: uuidv4(),
@@ -133,7 +138,7 @@ export const useWorkflowStore = create<WorkflowStore>((set, get) => ({
       animated: false,
       label,
       markerEnd: { type: MarkerType.ArrowClosed, width: 16, height: 16 },
-      style: { strokeWidth: 2.5, stroke: 'hsl(var(--muted-foreground) / 0.4)' },
+      style: { strokeWidth: 2.5, stroke: strokeColor },
       labelStyle: { fontWeight: 600, fontSize: 11 },
     } as WorkflowEdge;
 

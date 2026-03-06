@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { v4 as uuidv4 } from 'uuid';
+import { MarkerType } from 'reactflow';
 import { WorkflowNode, WorkflowEdge } from '../types/workflowTypes';
 
 export interface Project {
@@ -103,14 +104,54 @@ const DEMO_NODES: WorkflowNode[] = [
 ];
 
 const DEMO_EDGES: WorkflowEdge[] = [
-  { id: 'demo-e1', source: 'demo-start', target: 'demo-condition-1', type: 'smoothstep' },
-  { id: 'demo-e2', source: 'demo-condition-1', target: 'demo-action-welcome', sourceHandle: 'true', label: 'Yes', type: 'smoothstep' },
-  { id: 'demo-e3', source: 'demo-condition-1', target: 'demo-action-remind', sourceHandle: 'false', label: 'No', type: 'smoothstep' },
-  { id: 'demo-e4', source: 'demo-action-remind', target: 'demo-delay-1', type: 'smoothstep' },
-  { id: 'demo-e5', source: 'demo-delay-1', target: 'demo-condition-2', type: 'smoothstep' },
-  { id: 'demo-e6', source: 'demo-condition-2', target: 'demo-action-api', sourceHandle: 'true', label: 'Yes', type: 'smoothstep' },
-  { id: 'demo-e7', source: 'demo-condition-2', target: 'demo-delay-2', sourceHandle: 'false', label: 'No', type: 'smoothstep' },
-  { id: 'demo-e8', source: 'demo-action-welcome', target: 'demo-action-log', type: 'smoothstep' },
+  {
+    id: 'demo-e1', source: 'demo-start', target: 'demo-condition-1', type: 'smoothstep',
+    markerEnd: { type: MarkerType.ArrowClosed, width: 16, height: 16 },
+    style: { strokeWidth: 2.5, stroke: 'hsl(var(--muted-foreground) / 0.4)' },
+  },
+  {
+    id: 'demo-e2', source: 'demo-condition-1', target: 'demo-action-welcome', sourceHandle: 'true',
+    label: 'True', type: 'smoothstep',
+    markerEnd: { type: MarkerType.ArrowClosed, width: 16, height: 16 },
+    style: { strokeWidth: 2.5, stroke: 'hsl(152, 60%, 45%)' },
+    labelStyle: { fontWeight: 600, fontSize: 11 },
+  },
+  {
+    id: 'demo-e3', source: 'demo-condition-1', target: 'demo-action-remind', sourceHandle: 'false',
+    label: 'False', type: 'smoothstep',
+    markerEnd: { type: MarkerType.ArrowClosed, width: 16, height: 16 },
+    style: { strokeWidth: 2.5, stroke: 'hsl(0, 70%, 55%)' },
+    labelStyle: { fontWeight: 600, fontSize: 11 },
+  },
+  {
+    id: 'demo-e4', source: 'demo-action-remind', target: 'demo-delay-1', type: 'smoothstep',
+    markerEnd: { type: MarkerType.ArrowClosed, width: 16, height: 16 },
+    style: { strokeWidth: 2.5, stroke: 'hsl(var(--muted-foreground) / 0.4)' },
+  },
+  {
+    id: 'demo-e5', source: 'demo-delay-1', target: 'demo-condition-2', type: 'smoothstep',
+    markerEnd: { type: MarkerType.ArrowClosed, width: 16, height: 16 },
+    style: { strokeWidth: 2.5, stroke: 'hsl(var(--muted-foreground) / 0.4)' },
+  },
+  {
+    id: 'demo-e6', source: 'demo-condition-2', target: 'demo-action-api', sourceHandle: 'true',
+    label: 'True', type: 'smoothstep',
+    markerEnd: { type: MarkerType.ArrowClosed, width: 16, height: 16 },
+    style: { strokeWidth: 2.5, stroke: 'hsl(152, 60%, 45%)' },
+    labelStyle: { fontWeight: 600, fontSize: 11 },
+  },
+  {
+    id: 'demo-e7', source: 'demo-condition-2', target: 'demo-delay-2', sourceHandle: 'false',
+    label: 'False', type: 'smoothstep',
+    markerEnd: { type: MarkerType.ArrowClosed, width: 16, height: 16 },
+    style: { strokeWidth: 2.5, stroke: 'hsl(0, 70%, 55%)' },
+    labelStyle: { fontWeight: 600, fontSize: 11 },
+  },
+  {
+    id: 'demo-e8', source: 'demo-action-welcome', target: 'demo-action-log', type: 'smoothstep',
+    markerEnd: { type: MarkerType.ArrowClosed, width: 16, height: 16 },
+    style: { strokeWidth: 2.5, stroke: 'hsl(var(--muted-foreground) / 0.4)' },
+  },
 ];
 
 function createDemoProject(): Project {

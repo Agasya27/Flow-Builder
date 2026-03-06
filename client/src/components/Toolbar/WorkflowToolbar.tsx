@@ -80,6 +80,41 @@ export default function WorkflowToolbar({ onToggleSidebar, projectName, onBack }
       toast({ title: 'No nodes', description: 'Add nodes to the canvas first.', variant: 'destructive' });
       return;
     }
+
+    // Pre-simulation validation for condition nodes
+    const conditionNodes = nodes.filter((n) => n.data.type === 'condition');
+    let hasWarnings = false;
+
+    for (const cNode of conditionNodes) {
+      const outgoing = edges.filter((e) => e.source === cNode.id);
+      const hasTrueBranch = outgoing.some((e) => e.sourceHandle === 'true');
+      const hasFalseBranch = outgoing.some((e) => e.sourceHandle === 'false');
+
+      if (outgoing.length === 0) {
+        toast({
+          title: `⚠ "${cNode.data.label}" has no outgoing edges`,
+          description: 'Connect at least one branch (True/False) from this condition node.',
+          variant: 'destructive',
+        });
+        hasWarnings = true;
+      } else if (!hasTrueBranch || !hasFalseBranch) {
+        const missing = !hasTrueBranch ? 'True' : 'False';
+        toast({
+          title: `⚠ "${cNode.data.label}" missing ${missing} branch`,
+          description: `Consider connecting the ${missing} handle for complete branching.`,
+        });
+      }
+
+      if (cNode.data.type === 'condition' && !cNode.data.expression?.trim()) {
+        toast({
+          title: `⚠ "${cNode.data.label}" has no expression`,
+          description: 'The condition will default to false during simulation.',
+        });
+        hasWarnings = true;
+      }
+    }
+
+    // Don't block simulation on warnings — just notify and proceed
     stopRef.current = false;
     setIsSimRunning(true);
     startSimulation();

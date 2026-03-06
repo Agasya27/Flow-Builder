@@ -155,27 +155,139 @@ export default function NodeConfigPanel({ className, onClose, idPrefix = '' }: N
         </div>
 
         {/* ==================== CONDITION NODE ==================== */}
-        {data.type === 'condition' && (
-          <div className="space-y-2">
-            <Label htmlFor={`${idPrefix}node-expression`} className="text-xs font-semibold">Logical Expression</Label>
-            <Input
-              id={`${idPrefix}node-expression`}
-              data-testid="input-node-expression"
-              value={data.expression}
-              onChange={(e) => updateNodeData(node.id, { expression: e.target.value })}
-              placeholder="e.g. orderValue > 1000"
-              className="font-mono text-sm h-9"
-            />
-            <p className="text-[10px] text-muted-foreground/70 leading-relaxed">
-              During simulation, uses random values. Type <span className="font-mono font-bold">true</span> or <span className="font-mono font-bold">false</span> for a fixed result.
-            </p>
-            <div className={cn('mt-3 p-3 rounded-xl border', headerConfig.bgAccent, headerConfig.borderColor)}>
-              <p className={cn('text-[10px] font-medium leading-relaxed', headerConfig.textColor)}>
-                Connect two outgoing edges — one for True and one for False branch.
-              </p>
+        {data.type === 'condition' && (() => {
+          // Inline expression validation
+          const expr = data.expression?.trim() || '';
+          const isEmpty = expr.length === 0;
+          const hasOperator = /[><=!&|]/.test(expr) || expr === 'true' || expr === 'false';
+          const hasUnbalancedQuotes = (expr.split("'").length - 1) % 2 !== 0 || (expr.split('"').length - 1) % 2 !== 0;
+          const isInvalid = !isEmpty && (hasUnbalancedQuotes || (!hasOperator && !/^[a-zA-Z_.]+$/.test(expr)));
+
+          const exampleExpressions = [
+            'temperature > 30',
+            'score >= 50',
+            'status === "active"',
+            'user.age >= 18',
+            'order.total > 200',
+            'user.emailVerified',
+            '!user.premium',
+            'user.role === "admin"',
+          ];
+
+          const availableVars = [
+            { name: 'temperature', type: 'number', range: '-5 to 34' },
+            { name: 'score', type: 'number', range: '0 to 999' },
+            { name: 'status', type: 'string', values: 'active, inactive, pending, suspended' },
+            { name: 'value', type: 'number', range: '0 to 1999' },
+            { name: 'count', type: 'number', range: '0 to 49' },
+            { name: 'enabled', type: 'boolean', range: 'true / false' },
+            { name: 'user.age', type: 'number', range: '14 to 73' },
+            { name: 'user.role', type: 'string', values: 'admin, user, editor, viewer' },
+            { name: 'user.emailVerified', type: 'boolean', range: 'true / false' },
+            { name: 'user.premium', type: 'boolean', range: 'true / false' },
+            { name: 'order.total', type: 'number', range: '10 to 509' },
+            { name: 'order.status', type: 'string', values: 'pending, confirmed, shipped, delivered' },
+            { name: 'order.isPaid', type: 'boolean', range: 'true / false' },
+          ];
+
+          return (
+            <div className="space-y-4">
+              {/* Expression input */}
+              <div className="space-y-2">
+                <Label htmlFor={`${idPrefix}node-expression`} className="text-xs font-semibold">Logical Expression</Label>
+                <Input
+                  id={`${idPrefix}node-expression`}
+                  data-testid="input-node-expression"
+                  value={data.expression}
+                  onChange={(e) => updateNodeData(node.id, { expression: e.target.value })}
+                  placeholder="e.g. temperature > 30"
+                  className={cn(
+                    'font-mono text-sm h-9',
+                    isEmpty && 'border-amber-300 dark:border-amber-500/50',
+                    isInvalid && 'border-red-300 dark:border-red-500/50',
+                  )}
+                />
+                {/* Validation feedback */}
+                {isEmpty && (
+                  <div className="flex items-center gap-1.5 text-amber-600 dark:text-amber-400">
+                    <span className="text-sm">⚠</span>
+                    <p className="text-[10px] font-medium">Expression is empty — simulation will default to false.</p>
+                  </div>
+                )}
+                {isInvalid && (
+                  <div className="flex items-center gap-1.5 text-red-500 dark:text-red-400">
+                    <span className="text-sm">✕</span>
+                    <p className="text-[10px] font-medium">Expression may be invalid. Check for unbalanced quotes or missing operators.</p>
+                  </div>
+                )}
+                {!isEmpty && !isInvalid && (
+                  <p className="text-[10px] text-muted-foreground/70 leading-relaxed">
+                    During simulation, uses randomized context values. Type <span className="font-mono font-bold">true</span> or <span className="font-mono font-bold">false</span> for a fixed result.
+                  </p>
+                )}
+              </div>
+
+              {/* Example expressions */}
+              <div className="space-y-2">
+                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Quick Examples</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {exampleExpressions.map((ex) => (
+                    <button
+                      key={ex}
+                      type="button"
+                      onClick={() => updateNodeData(node.id, { expression: ex })}
+                      className={cn(
+                        'px-2 py-1 rounded-md text-[10px] font-mono font-medium',
+                        'bg-amber-50/80 dark:bg-amber-950/30 border border-amber-200/60 dark:border-amber-500/20',
+                        'text-amber-700 dark:text-amber-300',
+                        'hover:bg-amber-100 dark:hover:bg-amber-900/40 hover:border-amber-300 dark:hover:border-amber-500/40',
+                        'transition-colors cursor-pointer',
+                        data.expression === ex && 'ring-1 ring-amber-400 bg-amber-100 dark:bg-amber-900/50'
+                      )}
+                    >
+                      {ex}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Available variables */}
+              <details className="group">
+                <summary className={cn(
+                  'text-[10px] font-semibold text-muted-foreground uppercase tracking-wider cursor-pointer',
+                  'hover:text-foreground transition-colors select-none list-none',
+                  'flex items-center gap-1.5'
+                )}>
+                  <span className="transition-transform group-open:rotate-90 text-[8px]">▶</span>
+                  Available Variables
+                </summary>
+                <div className="mt-2 rounded-xl border border-border/60 overflow-hidden">
+                  <div className="max-h-[200px] overflow-y-auto custom-scrollbar">
+                    {availableVars.map((v, i) => (
+                      <div
+                        key={v.name}
+                        className={cn(
+                          'flex items-center justify-between gap-2 px-2.5 py-1.5 text-[10px]',
+                          i % 2 === 0 ? 'bg-muted/30' : 'bg-transparent'
+                        )}
+                      >
+                        <code className="font-mono font-bold text-amber-700 dark:text-amber-300">{v.name}</code>
+                        <span className="text-muted-foreground truncate text-right">{v.range || v.values}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </details>
+
+              {/* Branching info */}
+              <div className={cn('p-3 rounded-xl border', headerConfig.bgAccent, headerConfig.borderColor)}>
+                <p className={cn('text-[10px] font-medium leading-relaxed', headerConfig.textColor)}>
+                  Connect two outgoing edges — one from the <span className="text-emerald-600 dark:text-emerald-400 font-bold">● True</span> handle and one from the <span className="text-red-500 dark:text-red-400 font-bold">● False</span> handle.
+                </p>
+              </div>
             </div>
-          </div>
-        )}
+          );
+        })()}
 
         {/* ==================== ACTION NODE ==================== */}
         {data.type === 'action' && (
